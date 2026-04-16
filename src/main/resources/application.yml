@@ -1,0 +1,88 @@
+spring:
+  application:
+    name: gi025
+  datasource:
+    url: jdbc:h2:mem:gi025;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+  ai:
+    model:
+      chat: none
+      audio:
+        speech: none
+        transcription: none
+      embedding: none
+      image: none
+      moderation: none
+    mcp:
+      server:
+        enabled: true
+        name: gi025-enterprise-mcp
+        version: 1.0.0
+        instructions: >
+          Enterprise MCP server exposing CRM, sales quoting, approvals, and knowledge lookup.
+          Prefer structured tool calls when customer, order, or runbook data is required.
+        protocol: STREAMABLE
+        streamable-http:
+          mcp-endpoint: /mcp
+          keep-alive-interval: 30s
+        tool-response-mime-type:
+          list_customers: application/json
+          create_customer: application/json
+          quote_order: application/json
+          approve_order: application/json
+          search_knowledge: application/json
+      client:
+        enabled: true
+        initialized: false
+        toolcallback:
+          enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,beans,caches,configprops
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: gi025
+    description: Advanced enterprise Spring Boot 4 + MCP foundation
+    spring-boot: 4.0.5
+    spring-ai: 2.0.0-M4
+
+enterprise:
+  security:
+    api-key: change-me-enterprise-key
+  demo:
+    seed-enabled: true
+  ai:
+    system-prompt: |
+      You are an enterprise operations copilot.
+      Be concise, accurate, and explicit about assumptions.
+      When remote MCP tools are attached, prefer them for customer, order, and knowledge lookups.
+
+logging:
+  pattern:
+    level: "%5p [req:%X{requestId:-n/a}]"

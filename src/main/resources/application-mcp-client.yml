@@ -1,0 +1,13 @@
+spring:
+  config:
+    activate:
+      on-profile: mcp-client
+  ai:
+    mcp:
+      client:
+        initialized: true
+        streamable-http:
+          connections:
+            remote-enterprise:
+              url: ${REMOTE_MCP_BASE_URL:http://localhost:8080}
+              endpoint: /mcp

@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.githubstudycloud.gi025.config.EnterpriseProperties;
 import com.githubstudycloud.gi025.config.ApiKeyAuthenticationFilter;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc
 class EnterpriseApiIntegrationTests {
 
-	private static final String API_KEY = "change-me-enterprise-key";
+	private static final String API_KEY = EnterpriseProperties.Security.DEFAULT_LOCAL_API_KEY;
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -26,7 +27,10 @@ class EnterpriseApiIntegrationTests {
 	@Test
 	void listCustomersRequiresApiKey() throws Exception {
 		mockMvc.perform(get("/api/v1/customers"))
-			.andExpect(status().isUnauthorized());
+			.andExpect(status().isUnauthorized())
+			.andExpect(jsonPath("$.code").value("UNAUTHORIZED"))
+			.andExpect(jsonPath("$.message").value("Missing X-API-Key header"))
+			.andExpect(jsonPath("$.path").value("/api/v1/customers"));
 	}
 
 	@Test
@@ -60,6 +64,33 @@ class EnterpriseApiIntegrationTests {
 			.andExpect(jsonPath("$.data.customerNo").value("CUST-1001"))
 			.andExpect(jsonPath("$.data.discountRate").value(0.12))
 			.andExpect(jsonPath("$.data.quotedTotal").value(8088.96));
+	}
+
+	@Test
+	void createOrderAssignsSequentialOrderNumbers() throws Exception {
+		String payload = """
+			{
+			  "customerNo": "CUST-1001",
+			  "items": [
+			    { "sku": "CLOUD-OBS-01", "quantity": 1 }
+			  ],
+			  "notes": "Follow-up order"
+			}
+			""";
+
+		mockMvc.perform(post("/api/v1/orders")
+				.header(ApiKeyAuthenticationFilter.API_KEY_HEADER, API_KEY)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(payload))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.orderNo").value("SO-00002"));
+
+		mockMvc.perform(post("/api/v1/orders")
+				.header(ApiKeyAuthenticationFilter.API_KEY_HEADER, API_KEY)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(payload))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.orderNo").value("SO-00003"));
 	}
 
 	@Test

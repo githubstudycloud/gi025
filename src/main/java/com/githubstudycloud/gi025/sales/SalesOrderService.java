@@ -26,13 +26,17 @@ public class SalesOrderService {
 
 	private final CustomerService customerService;
 
+	private final OrderNumberSequenceRepository orderNumberSequenceRepository;
+
 	public SalesOrderService(
 			SalesOrderRepository salesOrderRepository,
 			ProductRepository productRepository,
-			CustomerService customerService) {
+			CustomerService customerService,
+			OrderNumberSequenceRepository orderNumberSequenceRepository) {
 		this.salesOrderRepository = salesOrderRepository;
 		this.productRepository = productRepository;
 		this.customerService = customerService;
+		this.orderNumberSequenceRepository = orderNumberSequenceRepository;
 	}
 
 	@Transactional(readOnly = true)
@@ -144,7 +148,11 @@ public class SalesOrderService {
 	}
 
 	private String nextOrderNo() {
-		return "SO-%05d".formatted(salesOrderRepository.findAll().size() + 1);
+		OrderNumberSequence sequence = orderNumberSequenceRepository.findBySequenceName(OrderNumberSequence.SALES_ORDER)
+			.orElseThrow(() -> new IllegalStateException("Missing sales_order sequence allocation row"));
+		long sequenceValue = sequence.claimNextValue();
+		orderNumberSequenceRepository.save(sequence);
+		return "SO-%05d".formatted(sequenceValue);
 	}
 
 	private String appendAuditNote(String current, String addition) {

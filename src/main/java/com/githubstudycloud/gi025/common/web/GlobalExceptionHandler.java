@@ -12,6 +12,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -42,6 +43,13 @@ public class GlobalExceptionHandler {
 			details.put(fieldError.getField(), fieldError.getDefaultMessage());
 		}
 		return build(request, HttpStatus.UNPROCESSABLE_ENTITY, "VALIDATION_ERROR", "Request validation failed", details);
+	}
+
+	@ExceptionHandler(NoResourceFoundException.class)
+	ResponseEntity<ApiErrorResponse> handleNoResource(
+			NoResourceFoundException exception,
+			HttpServletRequest request) {
+		return build(request, HttpStatus.NOT_FOUND, "NOT_FOUND", exception.getMessage(), Map.of());
 	}
 
 	@ExceptionHandler(Exception.class)

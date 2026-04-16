@@ -74,7 +74,8 @@ info:
 
 enterprise:
   security:
-    api-key: change-me-enterprise-key
+    api-keys: ${ENTERPRISE_API_KEYS:dev-local-api-key}
+    allow-default-api-key: true
   demo:
     seed-enabled: true
   ai:

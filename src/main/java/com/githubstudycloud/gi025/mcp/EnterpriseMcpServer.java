@@ -187,21 +187,41 @@ public class EnterpriseMcpServer {
 			throw new BusinessException("lineItems must not be blank");
 		}
 
+		List<String> tokens = Arrays.stream(raw.split(","))
+			.map(String::trim)
+			.filter(token -> !token.isBlank())
+			.toList();
+		if (tokens.isEmpty()) {
+			throw new BusinessException("lineItems must contain at least one SKU:QTY token");
+		}
+
+		return tokens.stream().map(this::parseLineItemToken).toList();
+	}
+
+	private OrderApiModels.OrderLineInput parseLineItemToken(String token) {
+		String[] parts = token.split(":", -1);
+		if (parts.length != 2) {
+			throw new BusinessException("Invalid token %s, expected SKU:QTY".formatted(token));
+		}
+
+		String sku = parts[0].trim();
+		String quantityText = parts[1].trim();
+		if (sku.isBlank() || quantityText.isBlank()) {
+			throw new BusinessException("Invalid token %s, expected SKU:QTY".formatted(token));
+		}
+		if (!quantityText.matches("\\d+")) {
+			throw new BusinessException("Quantity must be a positive integer for token %s".formatted(token));
+		}
+
 		try {
-			return Arrays.stream(raw.split(","))
-				.map(String::trim)
-				.filter(token -> !token.isBlank())
-				.map(token -> {
-					String[] parts = token.split(":");
-					if (parts.length != 2) {
-						throw new BusinessException("Invalid token %s, expected SKU:QTY".formatted(token));
-					}
-					return new OrderApiModels.OrderLineInput(parts[0].trim(), Integer.parseInt(parts[1].trim()));
-				})
-				.toList();
+			int quantity = Integer.parseInt(quantityText);
+			if (quantity <= 0) {
+				throw new BusinessException("Quantity must be greater than zero for token %s".formatted(token));
+			}
+			return new OrderApiModels.OrderLineInput(sku, quantity);
 		}
 		catch (NumberFormatException exception) {
-			throw new BusinessException("Quantity must be numeric in lineItems");
+			throw new BusinessException("Quantity is too large for token %s".formatted(token));
 		}
 	}
 

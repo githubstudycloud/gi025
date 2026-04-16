@@ -1,13 +1,20 @@
 package com.githubstudycloud.gi025.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.githubstudycloud.gi025.common.web.RequestIdFilter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,8 +28,15 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
 	private final EnterpriseProperties properties;
 
-	public ApiKeyAuthenticationFilter(EnterpriseProperties properties) {
+	private final ObjectMapper objectMapper = JsonMapper.builder().build();
+
+	private final boolean h2ConsoleEnabled;
+
+	public ApiKeyAuthenticationFilter(
+			EnterpriseProperties properties,
+			@Value("${spring.h2.console.enabled:false}") boolean h2ConsoleEnabled) {
 		this.properties = properties;
+		this.h2ConsoleEnabled = h2ConsoleEnabled;
 	}
 
 	@Override
@@ -32,7 +46,7 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
 			|| path.startsWith("/actuator/health")
 			|| path.equals("/actuator/info")
 			|| path.equals("/error")
-			|| path.startsWith("/h2-console");
+			|| (h2ConsoleEnabled && path.startsWith("/h2-console"));
 	}
 
 	@Override
@@ -40,12 +54,12 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
 			throws ServletException, IOException {
 		String apiKey = request.getHeader(API_KEY_HEADER);
 		if (apiKey == null || apiKey.isBlank()) {
-			unauthorized(response, "Missing " + API_KEY_HEADER + " header");
+			unauthorized(request, response, "Missing " + API_KEY_HEADER + " header");
 			return;
 		}
 
-		if (!properties.getSecurity().getApiKey().equals(apiKey)) {
-			unauthorized(response, "Invalid API key");
+		if (!properties.getSecurity().matches(apiKey)) {
+			unauthorized(request, response, "Invalid API key");
 			return;
 		}
 
@@ -58,16 +72,19 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
 		filterChain.doFilter(request, response);
 	}
 
-	private void unauthorized(HttpServletResponse response, String message) throws IOException {
+	private void unauthorized(HttpServletRequest request, HttpServletResponse response, String message) throws IOException {
 		SecurityContextHolder.clearContext();
 		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-		response.setContentType("application/json");
-		response.getWriter().write("""
-			{"code":"UNAUTHORIZED","message":"%s"}
-			""".formatted(escapeJson(message)));
-	}
-
-	private String escapeJson(String input) {
-		return input.replace("\\", "\\\\").replace("\"", "\\\"");
+		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+		String requestId = (String) request.getAttribute(RequestIdFilter.REQUEST_ID_ATTRIBUTE);
+		Map<String, Object> body = new LinkedHashMap<>();
+		body.put("success", false);
+		body.put("timestamp", Instant.now().toString());
+		body.put("requestId", requestId);
+		body.put("code", "UNAUTHORIZED");
+		body.put("message", message);
+		body.put("path", request.getRequestURI());
+		body.put("details", Map.of());
+		objectMapper.writeValue(response.getWriter(), body);
 	}
 }

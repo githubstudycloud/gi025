@@ -1,0 +1,19 @@
+spring:
+  h2:
+    console:
+      enabled: false
+
+management:
+  endpoint:
+    health:
+      show-details: when_authorized
+  info:
+    env:
+      enabled: false
+
+enterprise:
+  security:
+    api-keys: ${ENTERPRISE_API_KEYS:}
+    allow-default-api-key: false
+  demo:
+    seed-enabled: false

@@ -1,0 +1,48 @@
+.diff-stats-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
+  background: #f6f8fa;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: 'SF Mono', 'Consolas', monospace;
+}
+
+.stat {
+  font-weight: 600;
+}
+
+.stat-added {
+  color: #1a7f37;
+}
+
+.stat-removed {
+  color: #cf222e;
+}
+
+.stat-unchanged {
+  color: #656d76;
+}
+
+.stats-progress {
+  display: flex;
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #eee;
+}
+
+.progress-added {
+  background: #2da44e;
+}
+
+.progress-removed {
+  background: #cf222e;
+}
+
+.progress-unchanged {
+  background: #d0d7de;
+}

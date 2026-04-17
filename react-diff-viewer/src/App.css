@@ -1,0 +1,137 @@
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.app-header h1 {
+  font-size: 28px;
+  color: #24292f;
+  margin: 0 0 4px 0;
+}
+
+.subtitle {
+  color: #656d76;
+  font-size: 14px;
+  margin: 0;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 8px 0;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 0;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.view-toggle button {
+  padding: 6px 16px;
+  border: none;
+  background: #f6f8fa;
+  cursor: pointer;
+  font-size: 13px;
+  color: #24292f;
+  transition: background 0.15s;
+}
+
+.view-toggle button:not(:last-child) {
+  border-right: 1px solid #d0d7de;
+}
+
+.view-toggle button.active {
+  background: #0969da;
+  color: #fff;
+}
+
+.view-toggle button:hover:not(.active) {
+  background: #eaeef2;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.actions button {
+  padding: 6px 16px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  background: #f6f8fa;
+  cursor: pointer;
+  font-size: 13px;
+  color: #24292f;
+  transition: background 0.15s;
+}
+
+.actions button:hover {
+  background: #eaeef2;
+}
+
+.input-area {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.input-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.panel-header label {
+  font-weight: 600;
+  font-size: 14px;
+  color: #24292f;
+}
+
+.panel-header input[type='file'] {
+  font-size: 12px;
+}
+
+textarea {
+  width: 100%;
+  height: 200px;
+  padding: 12px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  font-family: 'SF Mono', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #0969da;
+  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.12);
+}
+
+.diff-output {
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 16px;
+}
